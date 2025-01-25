@@ -1,0 +1,22 @@
+- hosts: 127.0.0.1
+  connection: local
+  become: true
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install NVIDIA driver 565
+      apt:
+        name: nvidia-driver-565
+        state: present
+      register: nvidia_driver_install_result
+
+    - name: Remove noveau module
+      command: rmmod nouveau
+      register: remove_nouveau
+      ignore_errors: true
+
+    - name: Load nvidia module
+      command: modprobe nvidia
+      register: add_nvidia_module

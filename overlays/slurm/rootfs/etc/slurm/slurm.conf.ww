@@ -1,0 +1,1 @@
+{{ Include "/slurm/etc/slurm/slurm.conf" }}

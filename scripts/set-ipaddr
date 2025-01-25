@@ -1,0 +1,11 @@
+#!/bin/bash
+
+ipaddr=$(ip addr show $DEV | grep inet | grep -v ':' | awk '{ print $2 }' | cut -d/ -f1)
+
+if [[ -z $ipaddr ]]; then
+	echo "Error finding IP address"
+	exit 1
+fi
+
+sed -i "s/^ipaddr: .*/ipaddr: $ipaddr/" "/etc/warewulf/warewulf.conf"
+echo "Set IP for warewulf.conf to $ipaddr"

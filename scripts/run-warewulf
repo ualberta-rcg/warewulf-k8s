@@ -1,0 +1,4 @@
+#!/bin/bash
+while true; do
+	/usr/bin/wwctl server
+done

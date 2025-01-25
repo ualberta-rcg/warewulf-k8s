@@ -1,0 +1,5 @@
+#!/bin/bash
+/container/set-ipaddr
+wwctl configure -a 2>&1
+wwctl overlay build 2>&1
+/container/run-warewulf

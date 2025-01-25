@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warewulf
+  namespace: warewulf
+spec:
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: macvlan-warewulf@eth1
+      namespace: warewulf
+    spec:
+      containers:
+        - command:
+          env:
+            - name: DEV
+              value: eth1
+            - name: NETMASK
+              value: 255.255.255.0
+            - name: NETWORK
+              value: 192.168.1.0
+          image: karimali3/warewulf:ubuntu
+          imagePullPolicy: Always
+          name: warewulf
+          ports:
+            - containerPort: 9873
+              name: warewulf
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: true
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+            capabilities: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /host
+              name: warewulf
+              subPath: host
+            - mountPath: /etc/warewulf
+              name: warewulf
+              subPath: etc/warewulf
+            - mountPath: /var/lib/warewulf
+              name: warewulf
+              subPath: var/lib/warewulf
+            - mountPath: /usr/share/warewulf
+              name: warewulf
+              subPath: usr/share/warewulf
+            - mountPath: /etc/dnsmasq.d
+              name: warewulf
+              subPath: etc/dnsmasq.d
+            - mountPath: /slurm
+              name: slurm
+          lifecycle: {}
+          resources: {}
+        - image: 4km3/dnsmasq:2.90-r3
+          imagePullPolicy: Always
+          name: dhcp
+          ports:
+            - containerPort: 53
+              name: dhcp
+              protocol: TCP
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              add:
+                - NET_ADMIN
+            privileged: false
+            readOnlyRootFilesystem: false
+            runAsNonRoot: false
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /etc/dnsmasq.d
+              name: warewulf
+              subPath: host/etc/dnsmasq.d
+            - mountPath: /host/ipxe
+              name: warewulf
+              subPath: host/ipxe
+          resources: {}
+      dnsConfig:
+      dnsPolicy: ClusterFirst
+      hostname: warewulf
+      imagePullSecrets:
+      initContainers:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - hostPath:
+            path: /disks/warewulf
+            type: DirectoryOrCreate
+          name: warewulf
+        - hostPath:
+            path: /disks/slurm
+            type: DirectoryOrCreate
+          name: slurm
+  replicas: 1
