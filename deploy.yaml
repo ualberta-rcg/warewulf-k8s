@@ -33,12 +33,19 @@ kind: Deployment
 metadata:
   name: warewulf
   namespace: warewulf
+  labels:
+    app: warewulf
 spec:
+  selector:
+    matchLabels:
+      app: warewulf
   template:
     metadata:
       annotations:
         k8s.v1.cni.cncf.io/networks: macvlan-warewulf@eth1
       namespace: warewulf
+      labels:
+        app: warewulf
     spec:
       selector:
         matchLabels:
