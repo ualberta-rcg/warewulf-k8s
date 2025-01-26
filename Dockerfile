@@ -7,7 +7,8 @@ RUN apt update -y && apt upgrade -y && \
 	unzip \
 	ca-certificates \
 	build-essential \
-	curl
+	curl \
+	liblzma-dev
 	
 RUN mkdir /src && \
 	cd /src && \
@@ -31,16 +32,20 @@ RUN mkdir /src && \
 		WWCLIENTDIR=/warewulf && \
 	make lint && \
 	make && \
-	make install
+	make install && \
+	( DESTDIR=/src /src/warewulf/scripts/build-ipxe.sh )
 
 FROM ubuntu:24.04
 
-RUN mkdir -p /build/ww/usr/bin /build/ww/usr/bin /build/ww/var/lib /build/ww/usr/share /build/ww/etc
+RUN mkdir -p /build/ww/usr/bin /build/ww/usr/bin /build/ww/var/lib /build/ww/usr/share /build/ww/etc /build/ipxe/warewulf
 
 COPY --from=builder /usr/bin/wwctl /build/ww/usr/bin/wwctl
 COPY --from=builder /var/lib/warewulf /build/ww/var/lib/warewulf
 COPY --from=builder /usr/share/warewulf /build/ww/usr/share/warewulf
 COPY --from=builder /etc/warewulf /build/ww/etc/warewulf
+COPY --from=builder /src/warewulf/scripts/build-ipxe.sh /build/scripts/build-ipxe.sh
+COPY --from=builder /src/*.kpxe /build/ipxe/warewulf
+COPY --from=builder /src/*.efi /build/ipxe/warewulf
 
 RUN apt update -y && apt upgrade -y && apt install -y --no-install-recommends \
 	cpio \
@@ -53,6 +58,8 @@ RUN apt update -y && apt upgrade -y && apt install -y --no-install-recommends \
 	vim \
 	nano \
 	yq \
+	ca-certificates \
+	curl \
 	gawk && \
 	apt clean
 

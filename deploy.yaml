@@ -114,7 +114,7 @@ spec:
           volumeMounts:
             - mountPath: /etc/dnsmasq.d
               name: warewulf
-              subPath: host/etc/dnsmasq.d
+              subPath: etc/dnsmasq.d
             - mountPath: /host/ipxe
               name: warewulf
               subPath: host/ipxe
