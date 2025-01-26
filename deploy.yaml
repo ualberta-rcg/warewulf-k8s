@@ -40,6 +40,9 @@ spec:
         k8s.v1.cni.cncf.io/networks: macvlan-warewulf@eth1
       namespace: warewulf
     spec:
+      selector:
+        matchLabels:
+          app: warewulf
       containers:
         - command:
           env:
