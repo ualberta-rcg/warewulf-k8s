@@ -1,2 +1,0 @@
-CVMFS_HTTP_PROXY="http://192.168.1.30:3128"
-CVMFS_REPOSITORIES="cvmfs-config.cern.ch,soft.computecanada.ca"

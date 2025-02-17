@@ -16,15 +16,13 @@ spec:
       "master": "enp6s19",
       "mode": "bridge",
       "ipam": {
-        "type": "whereabouts",
-        "range": "192.168.1.1/24",
-        "exclude": [
-          "192.168.1.1/29",
-          "192.168.1.32/27",
-          "192.168.1.64/26",
-          "192.168.1.128/25"
-        ],
-        "gateway": "192.168.1.1"
+        "type": "static",
+        "addresses": [
+          {
+            "address": "192.168.1.8/24",
+            "gateway": "192.168.1.1"
+          }
+        ]
       }
     }
 ---
@@ -90,11 +88,13 @@ spec:
             - mountPath: /etc/dnsmasq.d
               name: warewulf
               subPath: etc/dnsmasq.d
+            - mountPath: /disks/warewulf
+              name: warewulf
             - mountPath: /slurm
               name: slurm
           lifecycle: {}
           resources: {}
-        - image: 4km3/dnsmasq:2.90-r3
+        - image: karimali3/dhcp:latest
           imagePullPolicy: Always
           name: dhcp
           ports:

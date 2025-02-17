@@ -1,0 +1,5 @@
+FROM 4km3/dnsmasq:2.90-r3
+RUN apk add inotify-tools
+COPY ./run_dhcp.sh /usr/local/bin/run_dhcp.sh
+RUN chmod +x /usr/local/bin/run_dhcp.sh
+ENTRYPOINT [ "/usr/local/bin/run_dhcp.sh" ]

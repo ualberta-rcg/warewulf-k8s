@@ -1,3 +1,4 @@
+# Adapted from the official warewulf Dockerfile
 FROM ubuntu:24.04 as builder
 
 RUN apt update -y && apt upgrade -y && \
@@ -9,7 +10,11 @@ RUN apt update -y && apt upgrade -y && \
 	build-essential \
 	curl \
 	liblzma-dev
-	
+
+RUN mkdir /build
+
+COPY . /build
+
 RUN mkdir /src && \
 	cd /src && \
 	git clone https://github.com/warewulf/warewulf.git && \
@@ -31,9 +36,11 @@ RUN mkdir /src && \
 		FIREWALLDDIR=/usr/lib/firewalld/service \
 		WWCLIENTDIR=/warewulf && \
 	make lint && \
-	make && \
+	make build && \
 	make install && \
 	( DESTDIR=/src /src/warewulf/scripts/build-ipxe.sh )
+
+RUN /build/scripts/patch_warewulf.sh
 
 FROM ubuntu:24.04
 
@@ -43,7 +50,6 @@ COPY --from=builder /usr/bin/wwctl /build/ww/usr/bin/wwctl
 COPY --from=builder /var/lib/warewulf /build/ww/var/lib/warewulf
 COPY --from=builder /usr/share/warewulf /build/ww/usr/share/warewulf
 COPY --from=builder /etc/warewulf /build/ww/etc/warewulf
-COPY --from=builder /src/warewulf/scripts/build-ipxe.sh /build/scripts/build-ipxe.sh
 COPY --from=builder /src/*.kpxe /build/ipxe/warewulf
 COPY --from=builder /src/*.efi /build/ipxe/warewulf
 

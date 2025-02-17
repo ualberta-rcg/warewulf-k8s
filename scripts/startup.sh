@@ -1,17 +1,23 @@
 #!/bin/bash
 
 if [ -d "/build" ]; then
-	cp -a /build/ww/* /
+	cp -a --update=none /build/ww/* /
 fi
 
 WWCONF=/etc/warewulf/warewulf.conf
-OVERLAYDIR=`yq '.paths.wwoverlaydir' $WWCONF | tr -d '"'`
 
 if [ -d "/build" ]; then
-	mkdir -p ${OVERLAYDIR}
-	cp -a /build/overlays/* ${OVERLAYDIR}/
-	ln -s /etc/systemd/system/ansible-run.service ${OVERLAYDIR}/ansible/rootfs/etc/systemd/system/multi-user.target.wants/ansible-run.service
-
+	if [ -d "/build/overlays" ]; then
+		OVERLAYDIR=`yq '.paths.wwoverlaydir' $WWCONF | tr -d '"'`
+		mkdir -p ${OVERLAYDIR}
+		cp -a /build/overlays/* ${OVERLAYDIR}/
+		ln -s /etc/systemd/system/ansible-run.service ${OVERLAYDIR}/ansible/rootfs/etc/systemd/system/multi-user.target.wants/ansible-run.service
+		if [ ! -f "${OVERLAYDIR}/cvmfs/rootfs/usr/local/bin/cvmfs-release-latest_all.deb" ]; then
+			mkdir -p ${OVERLAYDIR}/cvmfs/rootfs/usr/local/bin
+			cd ${OVERLAYDIR}/cvmfs/rootfs/usr/local/bin/
+			curl -O https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+		fi
+	fi
 	mkdir /container
 	cp /build/scripts/* /container
 	cp -f /build/scripts/service /usr/sbin/service
@@ -26,17 +32,11 @@ fi
 yq -yi '.ipaddr = "EMPTY"' $WWCONF
 yq -yi ".netmask = \"${NETMASK}\"" $WWCONF
 yq -yi ".network = \"${NETWORK}\"" $WWCONF
-yq -yi '.nfs.enabled = false' $WWCONF
-yq -yi '.dhcp.enabled = false' $WWCONF
-yq -yi '.tftp.enabled = false' $WWCONF
 yq -yi '.tftp.tftproot = "/host/ipxe"' $WWCONF
 
 useradd -r -d /nonexistent -s /usr/sbin/nologin munge
 useradd -r -d /nonexistent -s /usr/sbin/nologin slurm
 
-chown munge:munge ${OVERLAYDIR}/slurm/rootfs/etc/munge/munge.key.ww
-mkdir -p ${OVERLAYDIR}/cvmfs/rootfs/usr/local/bin
-cd ${OVERLAYDIR}/cvmfs/rootfs/usr/local/bin/
-curl -O https://cvmrepo.s3.cern.ch/cvmrepo/apt/cvmfs-release-latest_all.deb
+
 
 /container/start

@@ -1,0 +1,12 @@
+--- /usr/share/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww	2025-01-26 19:09:57.523575169 +0000
++++ /usr/share/warewulf/overlays/host/rootfs/etc/dnsmasq.d/ww4-hosts.conf.ww.new	2025-01-26 19:08:50.145305060 +0000
+@@ -15,6 +15,9 @@
+ {{- if $.Warewulf.GrubBoot }}
+ dhcp-boot=tag:x86PC,"warewulf/shim.efi"
+ {{- else }}
++{{- with (index $.Tftp.IpxeBinaries "00:00" ) }}
++dhcp-boot=tag:bios,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:00" }}"
++{{- end }}
+ {{- with (index $.Tftp.IpxeBinaries "00:07" ) }}
+ dhcp-boot=tag:x86PC,"/warewulf/{{ index $.Tftp.IpxeBinaries "00:07" }}"
+ {{- end }}
