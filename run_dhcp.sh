@@ -1,11 +1,13 @@
 #!/bin/sh
-
+PID=0
 while true; do
-	/usr/sbin/dnsmasq --no-daemon --keep-in-foreground --log-queries --log-facility=- &
-	PID=$!
-	if [ ! -d "/proc/$PID"]; then
-		continue
+	if [ ! -d "/proc/$PID" ]; then
+		/usr/sbin/dnsmasq --no-daemon --keep-in-foreground --log-queries --log-facility=- &
+		PID=$!
 	fi
-	inotifywait -e modify -e create -e delete -e move -r /etc/dnsmasq.d
-	kill -9 $PID
+	inotifywait -e modify -e create -e delete -e move -t 10 -r /etc/dnsmasq.d
+	if [ $? -eq 0 ]; then
+		echo "Restarting dnsmasq"
+		kill -9 $PID
+	fi
 done

@@ -34,9 +34,4 @@ yq -yi ".netmask = \"${NETMASK}\"" $WWCONF
 yq -yi ".network = \"${NETWORK}\"" $WWCONF
 yq -yi '.tftp.tftproot = "/host/ipxe"' $WWCONF
 
-useradd -r -d /nonexistent -s /usr/sbin/nologin munge
-useradd -r -d /nonexistent -s /usr/sbin/nologin slurm
-
-
-
 /container/start
