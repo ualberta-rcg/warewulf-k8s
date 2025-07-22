@@ -47,7 +47,7 @@ jobs:
             echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           else
             echo "Defaulting to 'latest' for push to main branch..."
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+            echo "VERSION=v4.6.2" >> $GITHUB_ENV
           fi
           echo "Version set to: $(echo $VERSION)"
 
