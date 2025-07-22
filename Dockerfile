@@ -20,7 +20,7 @@ COPY . /build
 
 RUN mkdir /src && \
 	cd /src && \
-	git clone https://github.com/warewulf/warewulf.git --branch '${WW_VER}' --depth 1 && \
+	git clone https://github.com/warewulf/warewulf.git --branch "${WW_VER}" --depth 1 && \
 	cd warewulf && \
 	make clean OFFLINE_BUILD=1 && \
 	make defaults \
