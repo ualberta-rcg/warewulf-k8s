@@ -1,0 +1,80 @@
+# This workflow builds a Docker image and pushes it to Docker Hub.
+# It can be triggered in three ways:
+# 1. On a schedule (e.g., hourly), building the latest version from the upstream repo.
+# 2. Manually via the GitHub Actions UI, allowing you to specify a version.
+# 3. Automatically on every push to the 'main' branch, tagging the image as 'latest'.
+
+name: Scheduled Build and Push Docker Image
+
+# Controls when the workflow will run
+on:
+  # Runs on a schedule (at the top of every hour)
+  schedule:
+    - cron: '0 * * * *'
+
+  # Triggers the workflow on push events but only for the main branch
+  push:
+    branches: [ "main" ]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version to build (e.g., v4.6.3)'
+        required: true
+        default: 'v4.6.2'
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository code
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # Step 2: Determine Version
+      # This step sets an environment variable with the version number based on the trigger.
+      - name: Determine Version
+        id: get_version
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "Fetching latest version from warewulf/warewulf..."
+            # Use the GitHub API to get the latest release tag, then strip the 'v' prefix.
+            LATEST_TAG=$(curl -s "https://api.github.com/repos/warewulf/warewulf/releases/latest" | jq -r .tag_name | sed 's/^v//')
+            echo "VERSION=${LATEST_TAG}" >> $GITHUB_ENV
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "Using manually specified version..."
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "Defaulting to 'latest' for push to main branch..."
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
+          echo "Version set to: $(echo $VERSION)"
+
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Step 4: Extract metadata (tags and labels) for Docker
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/${{ secrets.DOCKERHUB_REPO }} # Replace 'your-repository-name'
+          tags: |
+            type=raw,value=${{ env.VERSION }}
+
+      # Step 5: Build and push the Docker image
+      # This step builds the image and passes the version as a build argument.
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            WW_VER=${{ env.VERSION }}
