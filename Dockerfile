@@ -1,3 +1,5 @@
+ARG WW_VER
+ENV WW_VER="v4.6.2"
 # Adapted from the official warewulf Dockerfile
 FROM ubuntu:24.04 as builder
 
@@ -17,7 +19,7 @@ COPY . /build
 
 RUN mkdir /src && \
 	cd /src && \
-	git clone https://github.com/warewulf/warewulf.git && \
+	git clone https://github.com/warewulf/warewulf.git --branch '${WW_VER}' --depth 1 && \
 	cd warewulf && \
 	make clean OFFLINE_BUILD=1 && \
 	make defaults \
@@ -66,6 +68,7 @@ RUN apt update -y && apt upgrade -y && apt install -y --no-install-recommends \
 	yq \
 	ca-certificates \
 	curl \
+        dnsmasq \
 	gawk && \
 	apt clean
 

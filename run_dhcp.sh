@@ -5,9 +5,10 @@ while true; do
 		/usr/sbin/dnsmasq --no-daemon --keep-in-foreground --log-queries --log-facility=- &
 		PID=$!
 	fi
-	inotifywait -e modify -e create -e delete -e move -t 10 -r /etc/dnsmasq.d
+	inotifywait -e modify -e create -e delete -e move -t 1200 /etc/dnsmasq.d/ww4-hosts.conf
 	if [ $? -eq 0 ]; then
 		echo "Restarting dnsmasq"
 		kill -9 $PID
+		sleep 10
 	fi
 done
