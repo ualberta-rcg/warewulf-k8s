@@ -1,7 +1,8 @@
-ARG WW_VER
-ENV WW_VER="v4.6.2"
 # Adapted from the official warewulf Dockerfile
 FROM ubuntu:24.04 as builder
+
+ARG WW_VER
+ENV WW_VER="v4.6.2"
 
 RUN apt update -y && apt upgrade -y && \
 	DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
