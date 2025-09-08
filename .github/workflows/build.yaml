@@ -10,7 +10,7 @@ name: Scheduled Build and Push Docker Image
 on:
   # Runs on a schedule (at the top of every hour)
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 1 * * 1'
 
   # Triggers the workflow on push events but only for the main branch
   push:
